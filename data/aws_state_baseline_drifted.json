@@ -1,0 +1,118 @@
+{
+  "vpcs": [
+    {
+      "vpc_id": "vpc-aero01",
+      "cidr_block": "10.0.0.0/16",
+      "name": "aerodrift-prod-vpc"
+    }
+  ],
+  "subnets": [
+    {
+      "subnet_id": "subnet-public-a",
+      "vpc_id": "vpc-aero01",
+      "cidr_block": "10.0.1.0/24",
+      "is_public": true
+    },
+    {
+      "subnet_id": "subnet-private-a",
+      "vpc_id": "vpc-aero01",
+      "cidr_block": "10.0.2.0/24",
+      "is_public": false
+    }
+  ],
+  "security_groups": [
+    {
+      "group_id": "sg-web",
+      "group_name": "web-sg",
+      "vpc_id": "vpc-aero01",
+      "ingress_rules": [
+        {
+          "protocol": "tcp",
+          "from_port": 443,
+          "to_port": 443,
+          "source": "0.0.0.0/0"
+        },
+        {
+          "protocol": "tcp",
+          "from_port": 80,
+          "to_port": 80,
+          "source": "0.0.0.0/0"
+        }
+      ]
+    },
+    {
+      "group_id": "sg-app",
+      "group_name": "app-sg",
+      "vpc_id": "vpc-aero01",
+      "ingress_rules": [
+        {
+          "protocol": "tcp",
+          "from_port": 8080,
+          "to_port": 8080,
+          "source": "sg-web"
+        }
+      ]
+    },
+    {
+      "group_id": "sg-db",
+      "group_name": "db-sg",
+      "vpc_id": "vpc-aero01",
+      "ingress_rules": [
+        {
+          "protocol": "tcp",
+          "from_port": 5432,
+          "to_port": 5432,
+          "source": "sg-app"
+        },
+        {
+          "protocol": "tcp",
+          "from_port": 5432,
+          "to_port": 5432,
+          "source": "0.0.0.0/0"
+        }
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "instance_id": "i-web01",
+      "name": "prod-web-01",
+      "subnet_id": "subnet-public-a",
+      "security_groups": [
+        "sg-web"
+      ],
+      "private_ip": "10.0.1.10",
+      "tags": {
+        "Tier": "web",
+        "Environment": "production"
+      }
+    },
+    {
+      "instance_id": "i-app01",
+      "name": "prod-app-01",
+      "subnet_id": "subnet-private-a",
+      "security_groups": [
+        "sg-app"
+      ],
+      "private_ip": "10.0.2.10",
+      "tags": {
+        "Tier": "application",
+        "Environment": "production"
+      }
+    },
+    {
+      "instance_id": "i-db01",
+      "name": "prod-database-01",
+      "subnet_id": "subnet-private-a",
+      "security_groups": [
+        "sg-db"
+      ],
+      "private_ip": "10.0.2.20",
+      "tags": {
+        "Tier": "database",
+        "Environment": "production",
+        "Sensitivity": "critical"
+      }
+    }
+  ]
+}

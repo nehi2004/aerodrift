@@ -1,0 +1,15 @@
+# Graph engine
+networkx>=3.2
+
+# Terminal dashboard (Week 2+)
+rich>=13.7
+
+# State persistence (Week 4)
+aiosqlite>=0.19
+
+# PDF incident reports (Week 4)
+reportlab>=4.0
+
+# Only needed if/when you point this at a REAL AWS account instead of
+# the mock environment in mock_aws_environment.py
+# boto3>=1.34
