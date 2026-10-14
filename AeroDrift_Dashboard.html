@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AeroDrift Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1220;--panel:#111a2e;--panel2:#16213a;--line:#24324f;--text:#e6ecf8;--mut:#8b9bb8;--cyan:#38d6e8;--amber:#f5b942;--red:#ff5d6c;--green:#3ddc97}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;line-height:1.55;overflow-x:hidden}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:0;z-index:10;background:rgba(11,18,32,.92);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:54px}
+.logo{font-weight:700;letter-spacing:.3px}.logo b{color:var(--cyan)}
+nav ul{display:flex;gap:18px;list-style:none;font-size:14px}
+nav a{color:var(--mut);text-decoration:none}nav a:hover{color:var(--cyan)}
+section{padding:56px 0;border-bottom:1px solid var(--line)}
+.eyebrow{color:var(--cyan);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:44px;line-height:1.1;margin-bottom:14px}
+h2{font-size:28px;margin-bottom:10px}
+p.lead{color:var(--mut);max-width:720px;font-size:17px}
+.stats{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
+.stat{flex:1 1 200px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.stat .n{font-size:32px;font-weight:700;color:var(--cyan)}
+.stat .l{color:var(--mut);font-size:13px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+.row{display:flex;flex-wrap:wrap;gap:16px;margin-top:22px}
+.row>.card{flex:1 1 300px}
+.card h3{font-size:17px;margin-bottom:6px}
+.card p,.card li{color:var(--mut);font-size:14.5px}
+.card ul{padding-left:18px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 14px}
+button{font-family:inherit;font-size:14px;font-weight:500;padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer}
+button:hover:not(:disabled){border-color:var(--cyan)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.danger{border-color:var(--red);color:var(--red)}
+button.go{background:var(--cyan);color:#06222a;border-color:var(--cyan)}
+.status{display:inline-block;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:700}
+.s-ok{background:rgba(61,220,151,.15);color:var(--green)}
+.s-bad{background:rgba(255,93,108,.15);color:var(--red)}
+.s-work{background:rgba(245,185,66,.15);color:var(--amber)}
+.demo{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.demo .svgbox{flex:2 1 520px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.demo .side{flex:1 1 300px;display:flex;flex-direction:column;gap:16px;min-width:0}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:'IBM Plex Mono',monospace;font-size:12px;fill:var(--text)}
+.node rect{fill:var(--panel2);stroke:var(--line);stroke-width:1.5}
+.node.safe rect{stroke:var(--green)}.node.expo rect{stroke:var(--red);fill:rgba(255,93,108,.14)}.node.web rect{stroke:var(--amber)}
+.zone{fill:none;stroke:var(--line);stroke-dasharray:5 4}
+.edge{stroke:var(--mut);stroke-width:1.6;fill:none}
+.edge.drift{stroke:var(--red);stroke-width:2.6;stroke-dasharray:7 5;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-24}}
+pre.code,.log{background:#070d19;border:1px solid var(--line);border-radius:10px;padding:14px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#cfe3ff;white-space:pre-wrap;word-break:break-word;min-height:120px;max-height:260px;overflow:auto}
+.log div{margin-bottom:3px}.log .r{color:var(--red)}.log .g{color:var(--green)}.log .a{color:var(--amber)}.log .c{color:var(--cyan)}
+.pipe{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.step{flex:1 1 200px;background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--cyan);border-radius:10px;padding:16px}
+.step .k{color:var(--cyan);font-size:12px;letter-spacing:1.5px}
+.step h3{font-size:16px;margin:4px 0}.step p{font-size:13.5px;color:var(--mut)}
+.bars{margin-top:20px}
+.bar{margin-bottom:16px}
+.bar .t{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px}
+.bar .t span:last-child{color:var(--cyan)}
+.track{background:var(--panel2);border-radius:6px;height:14px;overflow:hidden}
+.fill{display:block;height:100%;background:var(--cyan);border-radius:6px}
+.fill.am{background:var(--amber)}
+.cmp{display:flex;flex-wrap:wrap;gap:16px;margin-top:20px}
+.cmp>div{flex:1 1 300px}
+.bad{border-color:var(--red)}.good{border-color:var(--green)}
+.tl{margin-top:20px;border-left:2px solid var(--line);padding-left:20px}
+.tl .d{margin-bottom:18px;position:relative}
+.tl .d::before{content:"";position:absolute;left:-27px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--cyan)}
+.tl .d b{color:var(--cyan)}
+.tl .d p{color:var(--mut);font-size:14.5px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500}
+.tag{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700}
+select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:inherit}
+.note{color:var(--mut);font-size:13px;margin-top:10px;border-left:3px solid var(--amber);padding-left:12px}
+footer{padding:36px 0;color:var(--mut);font-size:14px;text-align:center}
+@media(max-width:680px){nav ul{display:none}h1{font-size:32px}h2{font-size:23px}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><div class="logo">Aero<b>Drift</b></div>
+<ul><li><a href="#demo">Live Demo</a></li><li><a href="#pipeline">Pipeline</a></li><li><a href="#design">Design</a></li><li><a href="#safety">Safety</a></li><li><a href="#perf">Performance</a></li><li><a href="#history">History</a></li></ul></div></nav>
+
+<section><div class="wrap">
+<div class="eyebrow">Infotact Solutions · Python Development Internship</div>
+<h1>Self-healing cloud security,<br>drift to fix in milliseconds.</h1>
+<p class="lead">AeroDrift watches a cloud environment as a graph, spots when a change quietly exposes a private resource to the internet, writes the fix as real Python code, runs it in a sandbox, and verifies the result.</p>
+<div class="stats">
+<div class="stat"><div class="n mono">0.55 ms</div><div class="l">drift detection (graph diff)</div></div>
+<div class="stat"><div class="n mono">0.018 ms</div><div class="l">sandboxed remediation exec</div></div>
+<div class="stat"><div class="n mono">4.8×</div><div class="l">concurrent vs sequential ingestion</div></div>
+<div class="stat"><div class="n mono">0</div><div class="l">builtins available to generated code</div></div>
+</div>
+<p class="note">All data is mock AWS data shaped like boto3 responses — no real AWS account is touched. Numbers are measured on the developer's laptop.</p>
+</div></section>
+
+<section id="demo"><div class="wrap">
+<div class="eyebrow">Interactive</div><h2>Watch a drift get detected and healed</h2>
+<p class="lead">Follow the three buttons in order. Animation is slowed down for presentation; the real run takes ~11.6 ms end to end.</p>
+<div class="btns">
+<button id="b1" class="danger">① Simulate console change</button>
+<button id="b2" class="go" disabled>② Run AeroDrift</button>
+<button id="b3" disabled>↺ Reset</button>
+<span id="st" class="status s-ok">SECURE BASELINE</span>
+</div>
+<div class="demo">
+<div class="svgbox"><svg viewBox="0 0 900 360" id="svg" role="img" aria-label="Cloud topology graph"></svg></div>
+<div class="side">
+<div><div class="eyebrow">Generated remediation (ast)</div><pre class="code" id="code">// waiting for a drift…</pre></div>
+<div><div class="eyebrow">Event log</div><div class="log" id="log"><div>Baseline loaded: 10 nodes, 11 edges.</div></div></div>
+</div>
+</div>
+</div></section>
+
+<section id="pipeline"><div class="wrap">
+<div class="eyebrow">Architecture</div><h2>Four stages, one daemon</h2>
+<div class="pipe">
+<div class="step"><div class="k">WEEK 1</div><h3>Ingest &amp; Graph</h3><p>asyncio.gather fetches VPCs, subnets, security groups and instances concurrently, then NetworkX builds a directed topology graph.</p></div>
+<div class="step"><div class="k">WEEK 2</div><h3>Detect Drift</h3><p>Two snapshots are compared by exposure state. Changes are ranked CRITICAL / WARNING / INFO and shown in a Rich terminal tree.</p></div>
+<div class="step"><div class="k">WEEK 3</div><h3>Self-Heal</h3><p>Python's ast module builds the boto3 revoke call, which runs in a locked-down sandbox and is then verified against a fresh graph.</p></div>
+<div class="step"><div class="k">WEEK 4</div><h3>Remember &amp; Report</h3><p>Every snapshot goes into SQLite for time-travel diffs, and a PDF incident report is generated per event.</p></div>
+</div></div></section>
+
+<section id="design"><div class="wrap">
+<div class="eyebrow">Design decisions</div><h2>Three choices that mattered</h2>
+<div class="row">
+<div class="card"><h3>Direct vs transitive exposure</h3><p>A naive "is there a path from the internet?" check flags every healthy 3-tier app, because web → app → db is a path. AeroDrift separates <b>direct</b> exposure (the instance's own security group accepts the internet) from <b>transitive</b> reachability, so the baseline raises zero false alarms.</p></div>
+<div class="card"><h3>Drift = diff of states</h3><p>Instead of re-scanning rules, drift is the difference between two exposure maps. That makes detection fast (about a millisecond) and lets any two stored snapshots be compared later.</p></div>
+<div class="card"><h3>Concurrent ingestion</h3><p>The four API fetchers are independent, so they run together. Measured: 0.181 s concurrent vs 0.868 s sequential, a 4.79× speedup, with simulated API latency.</p></div>
+</div>
+<div class="cmp">
+<div class="card bad"><h3>❌ f-string code generation</h3><pre class="code mono">code = f"client.revoke(GroupId='{sg}', Port={port})"
+# breaks on quotes, easy to inject into</pre></div>
+<div class="card good"><h3>✅ ast-based generation</h3><pre class="code mono">call = ast.Call(func=ast.Attribute(...),
+  keywords=[ast.keyword('GroupId', ast.Constant(sg)), ...])
+ast.unparse(ast.fix_missing_locations(call))
+# structurally valid by construction</pre></div>
+</div></div></section>
+
+<section id="safety"><div class="wrap">
+<div class="eyebrow">Safety</div><h2>The generated code runs in a sandbox</h2>
+<p class="lead">Generated code is executed with <span class="mono">__builtins__ = {}</span> and only the <span class="mono">client</span> object in scope. A malicious snippet can't even call <span class="mono">open()</span>.</p>
+<div class="row">
+<div class="card"><h3>Attack test (real output)</h3><pre class="code mono">open('/etc/passwd').read()
+
+Sandbox correctly blocked it:
+Sandboxed remediation failed:
+name 'open' is not defined</pre></div>
+<div class="card"><h3>Honest caveat</h3><p>This is a guardrail, not a complete security boundary — determined Python escapes exist. In production the fix would also need an approval step, least-privilege IAM credentials, and a stronger isolation layer such as a container or separate process.</p></div>
+</div></div></section>
+
+<section id="perf"><div class="wrap">
+<div class="eyebrow">Measured</div><h2>Performance</h2>
+<div class="bars">
+<div class="bar"><div class="t"><span>Ingestion — sequential</span><span class="mono">0.868 s</span></div><div class="track"><span class="fill am" style="width:100%"></span></div></div>
+<div class="bar"><div class="t"><span>Ingestion — concurrent (asyncio.gather)</span><span class="mono">0.181 s</span></div><div class="track"><span class="fill" style="width:20.9%"></span></div></div>
+<div class="bar"><div class="t"><span>Total: drift → verified heal</span><span class="mono">11.59 ms</span></div><div class="track"><span class="fill" style="width:100%"></span></div></div>
+<div class="bar"><div class="t"><span>Drift detection</span><span class="mono">0.55 ms</span></div><div class="track"><span class="fill" style="width:4.7%"></span></div></div>
+<div class="bar"><div class="t"><span>Sandbox execution</span><span class="mono">0.018 ms</span></div><div class="track"><span class="fill" style="width:1%"></span></div></div>
+</div>
+<p class="note">Detection ranged 0.55–1.21 ms across runs. Ingestion timings use simulated API latency, so real AWS numbers will differ. The first group of bars and the second group are scaled separately.</p>
+</div></section>
+
+<section id="build"><div class="wrap">
+<div class="eyebrow">Build log</div><h2>Four weeks, daily commits</h2>
+<div class="tl">
+<div class="d"><b>Week 1 — Ingestion &amp; topology</b><p>Mock AWS environment, async ingestion, NetworkX graph with direct and transitive exposure queries.</p></div>
+<div class="d"><b>Week 2 — Drift detection</b><p>State-diff detector with severity levels and a Rich tree dashboard.</p></div>
+<div class="d"><b>Week 3 — Remediation</b><p>AST code generator, sandboxed executor and verification loop.</p></div>
+<div class="d"><b>Week 4 — Persistence &amp; reports</b><p>SQLite snapshot history, PDF incident reports, unified <span class="mono">main.py</span> daemon.</p></div>
+</div></div></section>
+
+<section id="history"><div class="wrap">
+<div class="eyebrow">Time travel</div><h2>Snapshot history</h2>
+<p class="lead">Pick any two stored snapshots and compare them, like <span class="mono">python main.py --diff 1 3</span>.</p>
+<table id="tbl"><thead><tr><th>#</th><th>Label</th><th>Taken</th><th>DB exposed?</th></tr></thead><tbody></tbody></table>
+<div class="btns"><label>Compare <select id="sa"></select></label><label>with <select id="sb"></select></label></div>
+<div class="card" id="diff"></div>
+</div></section>
+
+<footer><div class="wrap">AeroDrift · built with Python, asyncio, NetworkX, ast, SQLite, Rich, reportlab · github.com/nehi2004/aerodrift</div></footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+// ---------- topology ----------
+const N={
+ internet:{x:20,y:150,w:110,h:56,t:'internet',s:'0.0.0.0/0'},
+ sgweb:{x:270,y:40,w:140,h:50,t:'sg-web',s:'443,80 ← internet'},
+ sgapp:{x:270,y:160,w:140,h:50,t:'sg-app',s:'8080 ← sg-web'},
+ sgdb:{x:270,y:270,w:140,h:50,t:'sg-db',s:'5432 ← sg-app'},
+ web:{x:640,y:40,w:170,h:50,t:'i-web01',s:'prod-web-01'},
+ app:{x:640,y:160,w:170,h:50,t:'i-app01',s:'prod-app-01'},
+ db:{x:640,y:270,w:170,h:50,t:'i-db01',s:'prod-database-01'}
+};
+const E=[['internet','sgweb'],['sgweb','web'],['sgweb','sgapp'],['sgapp','app'],['sgapp','sgdb'],['sgdb','db']];
+let state='secure';
+function pt(n,side){const o=N[n];return side=='r'?[o.x+o.w,o.y+o.h/2]:[o.x,o.y+o.h/2]}
+function draw(){
+ let s=`<rect class="zone" x="200" y="12" width="680" height="96" rx="10"/><text x="212" y="28" style="fill:#8b9bb8">subnet-public-a</text>
+ <rect class="zone" x="200" y="128" width="680" height="214" rx="10"/><text x="212" y="144" style="fill:#8b9bb8">subnet-private-a</text>
+ <text x="14" y="352" style="fill:#8b9bb8">vpc-aero01 · aerodrift-prod-vpc</text>`;
+ E.forEach(([a,b])=>{if(a.startsWith('sg')&&b.startsWith('sg')){const o=N[a],q=N[b];s+=`<path class="edge" d="M${o.x+o.w/2},${o.y+o.h} L${q.x+q.w/2},${q.y}"/>`;return}const[p,q]=[pt(a,'r'),pt(b,'l')];s+=`<path class="edge" d="M${p[0]},${p[1]} C${p[0]+50},${p[1]} ${q[0]-50},${q[1]} ${q[0]},${q[1]}"/>`});
+ if(state!='secure'&&state!='healed'){const p=pt('internet','r'),q=pt('sgdb','l');
+  s+=`<path class="edge drift" d="M${p[0]},${p[1]} C${p[0]+60},${p[1]+90} ${q[0]-60},${q[1]} ${q[0]},${q[1]}"/><text x="140" y="262" style="fill:#ff5d6c">tcp/5432 ← 0.0.0.0/0</text>`}
+ const exposedDb=(state!='secure'&&state!='healed');
+ for(const k in N){const o=N[k];let c='node';
+  if(k=='web')c+=' web';else if(k=='db')c+=exposedDb?' expo':' safe';else if(k=='app')c+=' safe';
+  s+=`<g class="${c}"><rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" rx="8"/><text x="${o.x+10}" y="${o.y+22}" style="font-weight:700">${o.t}</text><text x="${o.x+10}" y="${o.y+40}" style="fill:#8b9bb8;font-size:11px">${o.s}</text></g>`}
+ s+=`<text x="640" y="104" style="fill:#f5b942;font-size:11px">DIRECT (by design)</text>`;
+ if(exposedDb)s+=`<text x="640" y="334" style="fill:#ff5d6c;font-size:11px">DIRECTLY EXPOSED</text>`;
+ $('svg').innerHTML=s}
+function setStatus(t,c){$('st').textContent=t;$('st').className='status '+c}
+function log(m,c=''){const d=document.createElement('div');if(c)d.className=c;d.textContent=m;$('log').appendChild(d);$('log').scrollTop=1e9}
+async function type(el,txt){el.textContent='';for(const ch of txt){el.textContent+=ch;await sleep(8)}}
+const CODE=`client.revoke_security_group_ingress(
+    GroupId='sg-db',
+    IpPermissions=[{
+        'IpProtocol': 'tcp',
+        'FromPort': 5432,
+        'ToPort': 5432,
+        'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+    }]
+)`;
+$('b1').onclick=()=>{state='drifted';draw();setStatus('DRIFT (unnoticed)','s-bad');
+ log('Someone opened tcp/5432 to 0.0.0.0/0 on sg-db via the console.','r');
+ log('Graph now has 12 edges (was 11).','a');$('b1').disabled=true;$('b2').disabled=false;$('b3').disabled=false};
+$('b2').onclick=async()=>{$('b2').disabled=true;$('b3').disabled=true;
+ state='detected';setStatus('DETECTING…','s-work');log('Ingesting snapshot (4 fetchers concurrently)…','c');await sleep(700);
+ log('CRITICAL — prod-database-01 became DIRECTLY reachable from the internet.','r');
+ log('path: internet → sg-db → i-db01   (detected in ~0.55 ms)','a');await sleep(900);
+ setStatus('GENERATING FIX','s-work');log('Building revoke call with the ast module…','c');await type($('code'),CODE);await sleep(500);
+ log('ast.unparse → compile OK. Entering sandbox (builtins = {}).','c');await sleep(800);
+ log('client.revoke_security_group_ingress executed in ~0.018 ms.','g');await sleep(600);
+ state='healed';draw();setStatus('HEALED & VERIFIED','s-ok');
+ log('Verification graph: i-db01 no longer directly exposed. Total ≈ 11.59 ms.','g');
+ log('Snapshot saved to SQLite · PDF incident report written.','g');$('b3').disabled=false};
+$('b3').onclick=()=>{state='secure';draw();setStatus('SECURE BASELINE','s-ok');$('code').textContent='// waiting for a drift…';
+ $('log').innerHTML='<div>Baseline loaded: 10 nodes, 11 edges.</div>';$('b1').disabled=false;$('b2').disabled=true;$('b3').disabled=true};
+draw();
+// ---------- history ----------
+const H=[
+ {id:1,l:'secure baseline',t:'—',x:false},{id:2,l:'drift detected',t:'—',x:true},
+ {id:3,l:'post-remediation (healed)',t:'2026-09-29 18:50:10',x:false},
+ {id:4,l:'secure baseline',t:'—',x:false},{id:5,l:'drift detected',t:'—',x:true},
+ {id:6,l:'post-remediation (healed)',t:'2026-10-14 10:10:14',x:false}];
+$('tbl').tBodies[0].innerHTML=H.map(h=>`<tr><td class="mono">#${h.id}</td><td>${h.l}</td><td class="mono">${h.t}</td><td><span class="tag ${h.x?'s-bad':'s-ok'}">${h.x?'YES':'no'}</span></td></tr>`).join('');
+const opts=H.map(h=>`<option value="${h.id}">#${h.id} ${h.l}</option>`).join('');
+$('sa').innerHTML=opts;$('sb').innerHTML=opts;$('sa').value=1;$('sb').value=3;
+function diff(){const a=H[$('sa').value-1],b=H[$('sb').value-1];let m;
+ if(a.x===b.x)m=`<b style="color:var(--green)">No security-relevant change</b> between #${a.id} and #${b.id}.`;
+ else if(!a.x&&b.x)m=`<b style="color:var(--red)">CRITICAL</b> — prod-database-01 became directly reachable from the internet between #${a.id} and #${b.id}.`;
+ else m=`<b style="color:var(--green)">RESOLVED</b> — prod-database-01 is no longer directly exposed between #${a.id} and #${b.id}.`;
+ $('diff').innerHTML=m}
+$('sa').onchange=diff;$('sb').onchange=diff;diff();
+</script>
+</body>
+</html>
